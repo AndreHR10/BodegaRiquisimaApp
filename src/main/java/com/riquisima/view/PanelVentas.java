@@ -4,7 +4,7 @@ import com.riquisima.model.Producto;
 import com.riquisima.repository.PagoRepository;
 import com.riquisima.repository.ProductoRepository;
 import com.riquisima.repository.VentaRepository;
-
+import com.riquisima.util.GeneradorBoleta;
 import java.awt.Color;
 import java.awt.Font;
 
@@ -52,7 +52,6 @@ public class PanelVentas extends JPanel {
 
         setBackground(Color.WHITE);
 
-        // TITULO
         JLabel titulo
                 = new JLabel("MODULO DE VENTAS");
 
@@ -64,7 +63,6 @@ public class PanelVentas extends JPanel {
 
         add(titulo);
 
-        // PRODUCTO
         JLabel lblProducto
                 = new JLabel("Producto:");
 
@@ -79,7 +77,6 @@ public class PanelVentas extends JPanel {
 
         add(cbProductos);
 
-        // CANTIDAD
         JLabel lblCantidad
                 = new JLabel("Cantidad:");
 
@@ -94,7 +91,6 @@ public class PanelVentas extends JPanel {
 
         add(txtCantidad);
 
-        // TABLA
         modelo
                 = new DefaultTableModel();
 
@@ -118,7 +114,6 @@ public class PanelVentas extends JPanel {
 
         add(scroll);
 
-        // BOTON AGREGAR
         btnAgregar
                 = new JButton("Agregar");
 
@@ -126,7 +121,6 @@ public class PanelVentas extends JPanel {
 
         add(btnAgregar);
 
-        // METODO PAGO
         JLabel lblMetodoPago
                 = new JLabel("Metodo Pago:");
 
@@ -156,7 +150,6 @@ public class PanelVentas extends JPanel {
 
         add(cbMetodoPago);
 
-        // BOTON VENDER
         btnVender
                 = new JButton("Realizar Venta");
 
@@ -169,7 +162,6 @@ public class PanelVentas extends JPanel {
 
         add(btnVender);
 
-        // TOTAL
         lblTotal
                 = new JLabel("TOTAL: S/ 0.00");
 
@@ -186,7 +178,6 @@ public class PanelVentas extends JPanel {
 
         add(lblTotal);
 
-        // EVENTOS
         btnAgregar.addActionListener(e -> {
 
             agregarProducto();
@@ -198,7 +189,6 @@ public class PanelVentas extends JPanel {
         });
     }
 
-    // CARGAR PRODUCTOS DESDE BD
     private void cargarProductos() {
 
         ProductoRepository repo
@@ -215,7 +205,6 @@ public class PanelVentas extends JPanel {
         }
     }
 
-    // AGREGAR PRODUCTO AL CARRITO
     private void agregarProducto() {
 
         try {
@@ -283,7 +272,6 @@ public class PanelVentas extends JPanel {
         }
     }
 
-    // CALCULAR TOTAL
     private void calcularTotal() {
 
         double total = 0;
@@ -303,7 +291,6 @@ public class PanelVentas extends JPanel {
         );
     }
 
-    // REALIZAR VENTA
     private void realizarVenta() {
 
         try {
@@ -330,20 +317,25 @@ public class PanelVentas extends JPanel {
                 );
             }
 
-            // METODO DE PAGO
             String metodoPago
                     = cbMetodoPago
                             .getSelectedItem()
                             .toString();
 
-            // GUARDAR VENTA
             VentaRepository ventaRepo
                     = new VentaRepository();
 
             int ventaId
                     = ventaRepo.guardarVenta(total);
 
-            // ACTUALIZAR STOCK
+            GeneradorBoleta boleta
+                    = new GeneradorBoleta();
+
+            boleta.generarBoleta(
+                    modelo,
+                    metodoPago,
+                    total
+            );
             ProductoRepository productoRepo
                     = new ProductoRepository();
 
@@ -380,7 +372,6 @@ public class PanelVentas extends JPanel {
                 }
             }
 
-            // GUARDAR PAGO EN BD
             PagoRepository pagoRepo
                     = new PagoRepository();
 
@@ -394,15 +385,12 @@ public class PanelVentas extends JPanel {
                     "Venta realizada correctamente"
             );
 
-            // LIMPIAR TABLA
             modelo.setRowCount(0);
 
-            // RESETEAR TOTAL
             lblTotal.setText(
                     "TOTAL: S/ 0.00"
             );
 
-            // RECARGAR PRODUCTOS
             cargarProductos();
 
         } catch (Exception e) {
